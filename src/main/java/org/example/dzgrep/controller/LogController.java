@@ -22,7 +22,12 @@ public class LogController {
 
   @RequestMapping(value = "/query", method = RequestMethod.POST)
   public ResponseEntity<LogView> createLogQuery(@RequestBody LogQueryParam logQueryParam) {
-    return null;
+    try {
+      return ResponseEntity.ok(logService.createLogQuery(logQueryParam));
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.internalServerError().build();
+    }
   }
 
   @RequestMapping(value = "/check", method = RequestMethod.GET)

@@ -13,7 +13,7 @@ import java.util.Map;
 @Data
 public class LogView {
 
-  private int viewId;
+  private String queryId;
 
   private Map<String, List<LogRecord>> serverLog;
 }

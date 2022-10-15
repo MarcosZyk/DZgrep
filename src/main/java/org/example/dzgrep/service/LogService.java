@@ -5,7 +5,7 @@ import org.example.dzgrep.vo.LogView;
 
 public interface LogService {
 
-  LogView createLogQuery(LogQueryParam logQueryParam);
+  LogView createLogQuery(LogQueryParam logQueryParam) throws Exception;
 
   LogView getExistingLogQuery(String queryId);
 }

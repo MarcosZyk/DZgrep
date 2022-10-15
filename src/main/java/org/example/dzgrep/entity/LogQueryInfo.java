@@ -1,4 +1,4 @@
-package org.example.dzgrep.vo;
+package org.example.dzgrep.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class LogQueryParam {
+public class LogQueryInfo {
+
+  private String queryId;
 
   private String queryName;
 
