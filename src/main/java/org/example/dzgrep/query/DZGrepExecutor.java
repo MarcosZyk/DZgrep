@@ -6,6 +6,7 @@ import com.jcraft.jsch.Session;
 import org.example.dzgrep.config.LogType;
 import org.example.dzgrep.entity.ServerInfo;
 
+import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,7 @@ public class DZGrepExecutor implements DistributionLogQueryExecutor {
   private static final int PORT = 22;
   private static final int TIME_OUT_LIMITATION = 20 * 60 * 1000;
 
-  private static final String QUERY_TEMPLATE = "zgrep \"%s\" log*%s*";
+  private static final String QUERY_TEMPLATE = "zgrep \"%s\" %slog*%s*";
 
   private final List<ServerInfo> targetServerList;
   private final Map<String, Map<LogType, OutputStream>> serverResponseOutputStream;
@@ -48,23 +49,24 @@ public class DZGrepExecutor implements DistributionLogQueryExecutor {
     Map<LogType, OutputStream> outputStreamMap = serverResponseOutputStream.get(serverInfo.getIp());
     for (LogType type : LogType.values()) {
       ChannelExec ec = (com.jcraft.jsch.ChannelExec) session.openChannel("exec");
-      ec.setCommand(generateCommand(plan, type));
+      ec.setCommand(generateCommand(plan, serverInfo.getLogDir(), type));
       ec.setInputStream(null);
       ec.setErrStream(System.err);
-      OutputStream outputStream = outputStreamMap.get(type);
+      OutputStream outputStream = new BufferedOutputStream(outputStreamMap.get(type));
       ec.setOutputStream(outputStream);
       ec.connect();
 
       while (!ec.isClosed()) Thread.sleep(500);
 
       ec.disconnect();
+      outputStream.flush();
       outputStream.close();
     }
 
     session.disconnect();
   }
 
-  private String generateCommand(DistributionLogQueryPlan plan, LogType type) {
-    return String.format(QUERY_TEMPLATE, plan.getKeyword(), type.getTxtInFileName());
+  private String generateCommand(DistributionLogQueryPlan plan, String logDir, LogType type) {
+    return String.format(QUERY_TEMPLATE, plan.getKeyword(), logDir + "/", type.getTxtInFileName());
   }
 }
