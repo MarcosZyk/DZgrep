@@ -59,6 +59,8 @@ public class LogServiceImpl implements LogService {
       executorMap.remove(queryId);
     }
 
+    logStore.pruneEmptyServer(queryId);
+
     return new LogView(queryId, Collections.emptyMap());
   }
 

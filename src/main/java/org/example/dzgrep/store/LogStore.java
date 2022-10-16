@@ -13,5 +13,7 @@ public interface LogStore {
   Map<String, Map<LogType, OutputStream>> getLogStoreOutputStream(LogQueryInfo queryInfo)
       throws IOException;
 
+  void pruneEmptyServer(String queryId) throws IOException;
+
   Map<String, InputStream> getAllLogInputStream(String queryId) throws IOException;
 }

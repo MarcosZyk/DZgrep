@@ -53,11 +53,37 @@ public class LogStoreImpl implements LogStore {
   }
 
   @Override
+  public void pruneEmptyServer(String queryId) throws IOException {
+    String queryDirPath = getRootDirPath() + File.separator + queryId;
+    File queryDir = new File(queryDirPath);
+    for (File serverDir : queryDir.listFiles()) {
+      if (!serverDir.isDirectory()) {
+        continue;
+      }
+
+      boolean canSkip = false;
+      for (File logFile : serverDir.listFiles()) {
+        if (logFile.length() > 0) {
+          canSkip = true;
+          break;
+        }
+      }
+      if (canSkip) {
+        continue;
+      }
+      serverDir.delete();
+    }
+  }
+
+  @Override
   public Map<String, InputStream> getAllLogInputStream(String queryId) throws IOException {
     String queryDirPath = getRootDirPath() + File.separator + queryId;
     File queryDir = new File(queryDirPath);
     Map<String, InputStream> result = new HashMap<>();
     for (File serverDir : queryDir.listFiles()) {
+      if (!serverDir.isDirectory()) {
+        continue;
+      }
       result.put(
           serverDir.getName(),
           new FileInputStream(
