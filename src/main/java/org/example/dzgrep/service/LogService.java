@@ -7,5 +7,7 @@ public interface LogService {
 
   LogView createLogQuery(LogQueryParam logQueryParam) throws Exception;
 
+  void cancelLogQuery(String queryId);
+
   LogView getExistingLogQuery(String queryId);
 }

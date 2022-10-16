@@ -54,6 +54,16 @@ public class DZGrepExecutor implements DistributionLogQueryExecutor {
     }
   }
 
+  @Override
+  public void cancel() {
+    executorService.shutdownNow();
+  }
+
+  @Override
+  public boolean isCancelled() {
+    return false;
+  }
+
   private void executeOnOneServer(ServerInfo serverInfo, DistributionLogQueryPlan plan)
       throws Exception {
     JSch jsch = new JSch();

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -24,6 +25,8 @@ public class LogServiceImpl implements LogService {
 
   private final ServerStore serverStore;
   private final LogStore logStore;
+
+  private final Map<String, DistributionLogQueryExecutor> executorMap = new ConcurrentHashMap<>();
 
   public LogServiceImpl(ServerStore serverStore, LogStore logStore) {
     this.serverStore = serverStore;
@@ -42,9 +45,26 @@ public class LogServiceImpl implements LogService {
     DistributionLogQueryExecutor executor =
         DistributionLogQueryExecutorFactory.createExecutor(
             serverStore.getServerList(logQueryParam.getServerIpList()), outputStreamMap);
-    executor.execute(generateDistributionLogQueryPlan(logQueryParam));
+
+    executorMap.put(queryId, executor);
+    try {
+      executor.execute(generateDistributionLogQueryPlan(logQueryParam));
+    } catch (Exception e) {
+      if (executor.isCancelled()) {
+        throw new Exception("Query cancelled");
+      } else {
+        throw e;
+      }
+    } finally {
+      executorMap.remove(queryId);
+    }
 
     return new LogView(queryId, Collections.emptyMap());
+  }
+
+  @Override
+  public void cancelLogQuery(String queryId) {
+    executorMap.get(queryId).cancel();
   }
 
   @Override

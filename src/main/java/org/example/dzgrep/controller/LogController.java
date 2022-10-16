@@ -30,6 +30,12 @@ public class LogController {
     }
   }
 
+  @RequestMapping(value = "/cancel", method = RequestMethod.GET)
+  public ResponseEntity<Boolean> cancelLogQuery(@RequestParam String queryId) {
+    logService.cancelLogQuery(queryId);
+    return ResponseEntity.ok(true);
+  }
+
   @RequestMapping(value = "/check", method = RequestMethod.GET)
   public ResponseEntity<LogView> getExistingLogQuery(@RequestParam String queryId) {
     return null;
