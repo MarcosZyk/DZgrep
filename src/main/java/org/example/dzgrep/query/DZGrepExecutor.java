@@ -8,30 +8,49 @@ import org.example.dzgrep.entity.ServerInfo;
 
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class DZGrepExecutor implements DistributionLogQueryExecutor {
 
   private static final int PORT = 22;
   private static final int TIME_OUT_LIMITATION = 20 * 60 * 1000;
-
-  private static final String QUERY_TEMPLATE = "zgrep \"%s\" %slog*%s*";
+  private static final String ACCESS_DIR_TEMPLATE = "cd %s";
+  private static final String QUERY_TEMPLATE = "zgrep \"%s\" log*%s*";
 
   private final List<ServerInfo> targetServerList;
   private final Map<String, Map<LogType, OutputStream>> serverResponseOutputStream;
+  private final ExecutorService executorService;
 
   DZGrepExecutor(
       List<ServerInfo> targetServerList,
       Map<String, Map<LogType, OutputStream>> serverResponseOutputStream) {
     this.targetServerList = targetServerList;
     this.serverResponseOutputStream = serverResponseOutputStream;
+    this.executorService =
+        Executors.newFixedThreadPool(targetServerList.size() * LogType.values().length);
   }
 
   @Override
   public void execute(DistributionLogQueryPlan plan) throws Exception {
+    List<Future<?>> futureList = new ArrayList<>();
     for (ServerInfo serverInfo : targetServerList) {
-      executeOnOneServer(serverInfo, plan);
+      futureList.add(
+          executorService.submit(
+              () -> {
+                try {
+                  executeOnOneServer(serverInfo, plan);
+                } catch (Exception e) {
+                  e.printStackTrace();
+                }
+              }));
+    }
+    for (Future<?> future : futureList) {
+      future.get();
     }
   }
 
@@ -48,25 +67,34 @@ public class DZGrepExecutor implements DistributionLogQueryExecutor {
 
     Map<LogType, OutputStream> outputStreamMap = serverResponseOutputStream.get(serverInfo.getIp());
     for (LogType type : LogType.values()) {
-      ChannelExec ec = (com.jcraft.jsch.ChannelExec) session.openChannel("exec");
-      ec.setCommand(generateCommand(plan, serverInfo.getLogDir(), type));
-      ec.setInputStream(null);
-      ec.setErrStream(System.err);
-      OutputStream outputStream = new BufferedOutputStream(outputStreamMap.get(type));
-      ec.setOutputStream(outputStream);
-      ec.connect();
-
-      while (!ec.isClosed()) Thread.sleep(500);
-
-      ec.disconnect();
-      outputStream.flush();
+      OutputStream outputStream = outputStreamMap.get(type);
+      executeCommand(session, generateCommand(plan, serverInfo.getLogDir(), type), outputStream);
       outputStream.close();
     }
 
     session.disconnect();
   }
 
+  private void executeCommand(Session session, String command, OutputStream outputStream)
+      throws Exception {
+    ChannelExec ec = (com.jcraft.jsch.ChannelExec) session.openChannel("exec");
+    ec.setCommand(command);
+    ec.setInputStream(null);
+    ec.setErrStream(System.err);
+    OutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
+    ec.setOutputStream(outputStream);
+    ec.connect();
+
+    while (!ec.isClosed()) Thread.sleep(500);
+
+    ec.disconnect();
+    bufferedOutputStream.flush();
+  }
+
   private String generateCommand(DistributionLogQueryPlan plan, String logDir, LogType type) {
-    return String.format(QUERY_TEMPLATE, plan.getKeyword(), logDir + "/", type.getTxtInFileName());
+    return String.format(ACCESS_DIR_TEMPLATE, logDir)
+        + "\n"
+        + String.format(QUERY_TEMPLATE, plan.getKeyword(), type.getTxtInFileName())
+        + "\n";
   }
 }
