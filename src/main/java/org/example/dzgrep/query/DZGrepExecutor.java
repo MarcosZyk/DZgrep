@@ -5,6 +5,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import org.example.dzgrep.config.LogType;
 import org.example.dzgrep.entity.ServerInfo;
+import org.example.dzgrep.util.TimeUtil;
 
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
@@ -20,7 +21,7 @@ public class DZGrepExecutor implements DistributionLogQueryExecutor {
   private static final int PORT = 22;
   private static final int TIME_OUT_LIMITATION = 20 * 60 * 1000;
   private static final String ACCESS_DIR_TEMPLATE = "cd %s";
-  private static final String QUERY_TEMPLATE = "zgrep \"%s\" log*%s*";
+  private static final String QUERY_TEMPLATE = "zgrep -E \"%s\" log*%s*";
 
   private final List<ServerInfo> targetServerList;
   private final Map<String, Map<LogType, OutputStream>> serverResponseOutputStream;
@@ -44,6 +45,7 @@ public class DZGrepExecutor implements DistributionLogQueryExecutor {
               () -> {
                 try {
                   executeOnOneServer(serverInfo, plan);
+                  System.out.println("Finish retrieving logs from " + serverInfo.getIp());
                 } catch (Exception e) {
                   e.printStackTrace();
                 }
@@ -104,7 +106,13 @@ public class DZGrepExecutor implements DistributionLogQueryExecutor {
   private String generateCommand(DistributionLogQueryPlan plan, String logDir, LogType type) {
     return String.format(ACCESS_DIR_TEMPLATE, logDir)
         + "\n"
-        + String.format(QUERY_TEMPLATE, plan.getKeyword(), type.getTxtInFileName())
+        + String.format(
+            QUERY_TEMPLATE,
+            "("
+                + TimeUtil.parseTimeRangeToRegex(plan.getStartTime(), plan.getEndTime())
+                + ").*"
+                + plan.getKeyword(),
+            type.getTxtInFileName())
         + "\n";
   }
 }
