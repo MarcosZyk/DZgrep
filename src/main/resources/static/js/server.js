@@ -44,6 +44,7 @@ class ServerForm {
 let serverIdGenerator = 0;
 let serverIdForAdd = 'add';
 let serverFormForAdd = new ServerForm(serverIdForAdd);
+let serverList = [];
 
 
 $(document).ready(function () {
@@ -81,6 +82,25 @@ function addServer() {
     newServer.password = $("#server-" + serverIdForAdd + "-password")[0].value;
     newServer.logDir = $("#server-" + serverIdForAdd + "-logDir")[0].value;
     $("#server-list").append(generateServerInfoUI(newServer));
+    serverList.push(newServer);
+
+    postRequest(
+        '/server/register',
+        {
+            ip: newServer.ip,
+            username: newServer.user,
+            password: newServer.password,
+            logDir: newServer.logDir,
+            isActive: 'true'
+        },
+        function (res) {
+
+        },
+        function (error) {
+            alert(error)
+        }
+    )
+
 }
 
 function generateServerInfoUI(serverInfo) {
