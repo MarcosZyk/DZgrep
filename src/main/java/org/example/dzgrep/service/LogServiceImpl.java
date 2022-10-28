@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 public class LogServiceImpl implements LogService {
@@ -39,6 +40,7 @@ public class LogServiceImpl implements LogService {
 
   @Override
   public LogView createLogQuery(LogQueryParam logQueryParam) throws Exception {
+    cleanLogQueryParam(logQueryParam);
     String queryId = generateQueryId();
     Map<String, Map<LogType, OutputStream>> outputStreamMap =
         logStore.getLogStoreOutputStream(generateLogQueryInfo(logQueryParam, queryId));
@@ -72,6 +74,15 @@ public class LogServiceImpl implements LogService {
   @Override
   public LogView getExistingLogQuery(String queryId) {
     return null;
+  }
+
+  private void cleanLogQueryParam(LogQueryParam logQueryParam) {
+    logQueryParam.setQueryName(logQueryParam.getQueryName().trim());
+    logQueryParam.setStartTime(logQueryParam.getStartTime().trim());
+    logQueryParam.setEndTime(logQueryParam.getEndTime().trim());
+    logQueryParam.setKeyword(logQueryParam.getKeyword().trim());
+    logQueryParam.setServerIpList(
+        logQueryParam.getServerIpList().stream().map(String::trim).collect(Collectors.toList()));
   }
 
   private LogQueryInfo generateLogQueryInfo(LogQueryParam logQueryParam, String queryId) {

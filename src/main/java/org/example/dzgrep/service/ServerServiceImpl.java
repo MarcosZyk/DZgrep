@@ -41,10 +41,10 @@ public class ServerServiceImpl implements ServerService {
 
   private ServerInfo getServerInfo(ServerView serverView) {
     return new ServerInfo(
-        serverView.getIp(),
-        serverView.getUsername(),
-        serverView.getPassword(),
-        serverView.getLogDir(),
+        serverView.getIp().trim(),
+        serverView.getUsername().trim(),
+        serverView.getPassword().trim(),
+        serverView.getLogDir().trim(),
         serverView.isActive());
   }
 }
