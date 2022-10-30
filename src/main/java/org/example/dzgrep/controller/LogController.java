@@ -40,4 +40,8 @@ public class LogController {
   public ResponseEntity<LogView> getExistingLogQuery(@RequestParam String queryId) {
     return null;
   }
+
+  public ResponseEntity<String> getDetail() {
+    return null;
+  }
 }

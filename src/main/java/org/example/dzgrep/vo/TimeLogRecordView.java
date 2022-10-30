@@ -4,16 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Map;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class LogView {
+public class TimeLogRecordView {
 
-  private String queryId;
+  private String time;
 
-  private List<String> serverList;
-
-  private List<TimeLogRecordView> logList;
+  private Map<String, LogRecordView> serverLogs;
 }

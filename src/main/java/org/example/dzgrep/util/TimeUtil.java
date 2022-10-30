@@ -1,6 +1,12 @@
 package org.example.dzgrep.util;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class TimeUtil {
+
+  private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
   private TimeUtil() {}
 
@@ -114,5 +120,13 @@ public class TimeUtil {
 
   private static boolean isNullOrEmpty(String s) {
     return s == null || s.isEmpty();
+  }
+
+  public static Date parseTime(String time) throws ParseException {
+    return dateFormat.parse(time);
+  }
+
+  public static String formatTime(Date date) {
+    return dateFormat.format(date);
   }
 }

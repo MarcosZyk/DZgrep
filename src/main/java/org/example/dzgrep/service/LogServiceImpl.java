@@ -2,18 +2,28 @@ package org.example.dzgrep.service;
 
 import org.example.dzgrep.config.LogType;
 import org.example.dzgrep.entity.LogQueryInfo;
+import org.example.dzgrep.entity.LogRecord;
 import org.example.dzgrep.query.DistributionLogQueryExecutor;
 import org.example.dzgrep.query.DistributionLogQueryExecutorFactory;
 import org.example.dzgrep.query.DistributionLogQueryPlan;
+import org.example.dzgrep.reader.LogReader;
 import org.example.dzgrep.store.LogStore;
 import org.example.dzgrep.store.ServerStore;
+import org.example.dzgrep.util.TimeUtil;
 import org.example.dzgrep.vo.LogQueryParam;
+import org.example.dzgrep.vo.LogRecordView;
 import org.example.dzgrep.vo.LogView;
+import org.example.dzgrep.vo.TimeLogRecordView;
 import org.springframework.stereotype.Service;
 
 import java.io.OutputStream;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -23,11 +33,15 @@ public class LogServiceImpl implements LogService {
 
   private static final AtomicInteger QUERY_ID_GENERATOR = new AtomicInteger();
   private static final String QUERY_ID_TEMPLATE = "query_%s";
+  private static final int PAGE_SIZE = 50;
 
   private final ServerStore serverStore;
   private final LogStore logStore;
 
   private final Map<String, DistributionLogQueryExecutor> executorMap = new ConcurrentHashMap<>();
+
+  private final Map<String, QueryResultGenerator> queryResultGeneratorMap =
+      new ConcurrentHashMap<>();
 
   public LogServiceImpl(ServerStore serverStore, LogStore logStore) {
     this.serverStore = serverStore;
@@ -63,7 +77,20 @@ public class LogServiceImpl implements LogService {
 
     logStore.pruneEmptyServer(queryId);
 
-    return new LogView(queryId, Collections.emptyMap());
+    QueryResultGenerator resultGenerator =
+        new QueryResultGenerator(logStore.getAllLogReader(queryId));
+    queryResultGeneratorMap.put(queryId, resultGenerator);
+
+    List<TimeLogRecordView> resultList = new ArrayList<>(PAGE_SIZE);
+    for (int i = 0; i < PAGE_SIZE; i++) {
+      if (resultGenerator.hasNext()) {
+        resultList.add(resultGenerator.next());
+      } else {
+        break;
+      }
+    }
+
+    return new LogView(queryId, resultGenerator.getServerList(), resultList);
   }
 
   @Override
@@ -98,5 +125,90 @@ public class LogServiceImpl implements LogService {
   private DistributionLogQueryPlan generateDistributionLogQueryPlan(LogQueryParam logQueryParam) {
     return new DistributionLogQueryPlan(
         logQueryParam.getStartTime(), logQueryParam.getEndTime(), logQueryParam.getKeyword());
+  }
+
+  private static class QueryResultGenerator implements Iterator<TimeLogRecordView> {
+
+    private final Map<String, LogReader> serverLogReader;
+    private final List<String> serverList;
+
+    private final Map<String, LogRecord> nextRecordMap = new HashMap<>();
+
+    private TimeLogRecordView nextElement;
+
+    QueryResultGenerator(Map<String, LogReader> serverLogReader) {
+      this.serverLogReader = serverLogReader;
+      this.serverList = new ArrayList<>(serverLogReader.keySet());
+    }
+
+    List<String> getServerList() {
+      return serverList;
+    }
+
+    @Override
+    public boolean hasNext() {
+      if (nextElement == null) {
+        readNext();
+      }
+      return nextElement != null;
+    }
+
+    @Override
+    public TimeLogRecordView next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+      TimeLogRecordView result = nextElement;
+      nextElement = null;
+      return result;
+    }
+
+    private void readNext() {
+      Map<String, LogRecordView> result = new HashMap<>();
+      Date currentDate = null;
+      LogRecord logRecord;
+      for (String server : serverList) {
+        logRecord = peek(server);
+        if (logRecord == null) {
+          continue;
+        }
+        if (currentDate == null || logRecord.getTime().before(currentDate)) {
+          currentDate = logRecord.getTime();
+        }
+      }
+
+      for (String server : serverList) {
+        logRecord = peek(server);
+        if (logRecord == null) {
+          continue;
+        }
+        if (logRecord.getTime().equals(currentDate)) {
+          result.put(server, generateLogRecordView(pop(server)));
+        }
+      }
+      nextElement = new TimeLogRecordView(TimeUtil.formatTime(currentDate), result);
+    }
+
+    private LogRecord peek(String server) {
+      LogRecord result = nextRecordMap.get(server);
+      if (result == null) {
+        LogReader logReader = serverLogReader.get(server);
+        if (logReader.hasNext()) {
+          result = logReader.next();
+          nextRecordMap.put(server, result);
+        }
+      }
+      return result;
+    }
+
+    private LogRecord pop(String server) {
+      LogRecord result = nextRecordMap.get(server);
+      nextRecordMap.remove(server);
+      return result;
+    }
+
+    private LogRecordView generateLogRecordView(LogRecord logRecord) {
+      return new LogRecordView(logRecord.getIndex(), logRecord.getContent());
+    }
   }
 }

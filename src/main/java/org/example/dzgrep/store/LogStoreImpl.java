@@ -2,15 +2,15 @@ package org.example.dzgrep.store;
 
 import org.example.dzgrep.config.LogType;
 import org.example.dzgrep.entity.LogQueryInfo;
+import org.example.dzgrep.reader.LogReader;
+import org.example.dzgrep.reader.LogReaderFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -76,21 +76,19 @@ public class LogStoreImpl implements LogStore {
   }
 
   @Override
-  public Map<String, InputStream> getAllLogInputStream(String queryId) throws IOException {
+  public Map<String, LogReader> getAllLogReader(String queryId) throws IOException {
     String queryDirPath = getRootDirPath() + File.separator + queryId;
     File queryDir = new File(queryDirPath);
-    Map<String, InputStream> result = new HashMap<>();
+    Map<String, LogReader> result = new HashMap<>();
     for (File serverDir : queryDir.listFiles()) {
       if (!serverDir.isDirectory()) {
         continue;
       }
       result.put(
           serverDir.getName(),
-          new FileInputStream(
-              new File(
-                  serverDir.getPath()
-                      + File.separator
-                      + String.format(LOG_FILE_TEMPLATE, LogType.all.getTxtInFileName()))));
+          LogReaderFactory.createLogReader(
+              serverDir.getPath(),
+              String.format(LOG_FILE_TEMPLATE, LogType.all.getTxtInFileName())));
     }
     return result;
   }
