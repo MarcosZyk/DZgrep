@@ -61,8 +61,9 @@ public class TimeUtil {
       for (int j = i + 1; j < startTimeCharArray.length; j++) {
         if (isNotNum(startTimeCharArray[j])) {
           regexBuilder.append(startTimeCharArray[j]);
+        } else {
+          regexBuilder.append("[0-9]");
         }
-        regexBuilder.append("[0-9]");
       }
     }
 
@@ -78,7 +79,11 @@ public class TimeUtil {
           .append(incChar(endTimeCharArray[firstDiffIndex], -1))
           .append(']');
       for (int i = firstDiffIndex + 1; i < startTimeCharArray.length; i++) {
-        regexBuilder.append("[0-9]");
+        if (isNotNum(startTimeCharArray[i])) {
+          regexBuilder.append(startTimeCharArray[i]);
+        } else {
+          regexBuilder.append("[0-9]");
+        }
       }
     }
 
@@ -100,8 +105,9 @@ public class TimeUtil {
       for (int j = i + 1; j < endTimeCharArray.length; j++) {
         if (isNotNum(startTimeCharArray[j])) {
           regexBuilder.append(startTimeCharArray[j]);
+        } else {
+          regexBuilder.append("[0-9]");
         }
-        regexBuilder.append("[0-9]");
       }
     }
 

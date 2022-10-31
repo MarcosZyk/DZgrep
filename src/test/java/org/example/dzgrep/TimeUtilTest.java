@@ -12,5 +12,11 @@ public class TimeUtilTest {
     for (String element : TimeUtil.parseTimeRangeToRegex(startTime, endTime).split("\\|")) {
       System.out.println(element);
     }
+
+    startTime = "2022-10-22 09:28:31";
+    endTime = "2022-10-22 09:53:54";
+    for (String element : TimeUtil.parseTimeRangeToRegex(startTime, endTime).split("\\|")) {
+      System.out.println(element);
+    }
   }
 }

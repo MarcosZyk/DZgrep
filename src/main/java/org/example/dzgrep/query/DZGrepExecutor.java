@@ -43,10 +43,23 @@ public class DZGrepExecutor implements DistributionLogQueryExecutor {
       futureList.add(
           executorService.submit(
               () -> {
+                long currentTime = System.currentTimeMillis();
                 try {
+                  System.out.println("Start retrieving logs from " + serverInfo.getIp());
                   executeOnOneServer(serverInfo, plan);
-                  System.out.println("Finish retrieving logs from " + serverInfo.getIp());
+                  System.out.println(
+                      "Finish retrieving logs from "
+                          + serverInfo.getIp()
+                          + " in "
+                          + (System.currentTimeMillis() - currentTime)
+                          + "ms");
                 } catch (Exception e) {
+                  System.out.println(
+                      "Failed retrieving logs from "
+                          + serverInfo.getIp()
+                          + " in "
+                          + (System.currentTimeMillis() - currentTime)
+                          + "ms");
                   e.printStackTrace();
                 }
               }));
@@ -89,6 +102,7 @@ public class DZGrepExecutor implements DistributionLogQueryExecutor {
 
   private void executeCommand(Session session, String command, OutputStream outputStream)
       throws Exception {
+    System.out.println("Log query command: " + command);
     ChannelExec ec = (com.jcraft.jsch.ChannelExec) session.openChannel("exec");
     ec.setCommand(command);
     ec.setInputStream(null);
