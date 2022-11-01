@@ -72,10 +72,21 @@ public class LogReaderImpl implements LogReader {
       return;
     }
 
-    int rollNumberSeparatorIndex = text.indexOf(" ", timeSeparatorIndex);
+    int rollNumberSeparatorIndex = text.indexOf(" ", timeSeparatorIndex + 1);
     logRecord.setRollNumber(
         Integer.parseInt(text.substring(timeSeparatorIndex + 1, rollNumberSeparatorIndex)));
-    logRecord.setContent(text.substring(rollNumberSeparatorIndex + 1));
+
+    int threadSeparatorIndex = text.indexOf(" ", rollNumberSeparatorIndex + 1);
+    logRecord.setThread(text.substring(rollNumberSeparatorIndex + 1, threadSeparatorIndex));
+
+    int typeSeparatorIndex = text.indexOf(" ", threadSeparatorIndex + 1);
+    logRecord.setType(text.substring(threadSeparatorIndex + 1, typeSeparatorIndex));
+
+    int sourceSeparatorIndex = text.indexOf(" ", typeSeparatorIndex + 1);
+    logRecord.setSource(text.substring(typeSeparatorIndex + 1, sourceSeparatorIndex));
+
+    // type - content
+    logRecord.setContent(text.substring(sourceSeparatorIndex + 3));
 
     nextRecord = logRecord;
   }

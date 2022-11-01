@@ -177,6 +177,10 @@ public class LogServiceImpl implements LogService {
         }
       }
 
+      if (currentDate == null) {
+        return;
+      }
+
       for (String server : serverList) {
         logRecord = peek(server);
         if (logRecord == null) {
@@ -208,7 +212,12 @@ public class LogServiceImpl implements LogService {
     }
 
     private LogRecordView generateLogRecordView(LogRecord logRecord) {
-      return new LogRecordView(logRecord.getIndex(), logRecord.getContent());
+      return new LogRecordView(
+          logRecord.getIndex(),
+          logRecord.getThread(),
+          logRecord.getType(),
+          logRecord.getSource(),
+          logRecord.getContent());
     }
   }
 }

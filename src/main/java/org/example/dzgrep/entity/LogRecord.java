@@ -19,5 +19,11 @@ public class LogRecord {
 
   private int rollNumber;
 
+  private String thread;
+
+  private String type;
+
+  private String source;
+
   private String content;
 }

@@ -11,5 +11,11 @@ public class LogRecordView {
 
   private long index;
 
+  private String thread;
+
+  private String type;
+
+  private String source;
+
   private String content;
 }
