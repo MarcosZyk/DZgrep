@@ -3,13 +3,18 @@ package org.example.dzgrep.service;
 import org.example.dzgrep.config.LogType;
 import org.example.dzgrep.entity.LogQueryInfo;
 import org.example.dzgrep.entity.LogRecord;
+import org.example.dzgrep.entity.ServerInfo;
 import org.example.dzgrep.query.DistributionLogQueryExecutor;
 import org.example.dzgrep.query.DistributionLogQueryExecutorFactory;
 import org.example.dzgrep.query.DistributionLogQueryPlan;
+import org.example.dzgrep.query.LogContextQueryExecutor;
+import org.example.dzgrep.query.LogContextQueryExecutorFactory;
+import org.example.dzgrep.query.LogContextQueryPlan;
 import org.example.dzgrep.reader.LogReader;
 import org.example.dzgrep.store.LogStore;
 import org.example.dzgrep.store.ServerStore;
 import org.example.dzgrep.util.TimeUtil;
+import org.example.dzgrep.vo.LogContextParam;
 import org.example.dzgrep.vo.LogQueryParam;
 import org.example.dzgrep.vo.LogRecordView;
 import org.example.dzgrep.vo.LogView;
@@ -101,6 +106,19 @@ public class LogServiceImpl implements LogService {
   @Override
   public LogView getExistingLogQuery(String queryId) {
     return null;
+  }
+
+  @Override
+  public String getLogContext(LogContextParam logContextParam) throws Exception {
+    LogRecord logRecord =
+        logStore.getRawLog(
+            logContextParam.getQueryId(),
+            logContextParam.getTargetServer(),
+            logContextParam.getIndex());
+    ServerInfo serverInfo = serverStore.getServer(logContextParam.getTargetServer());
+    LogContextQueryExecutor executor = LogContextQueryExecutorFactory.createExecutor();
+    return executor.execute(
+        new LogContextQueryPlan(serverInfo, logRecord.getFileName(), logRecord.getRawText()));
   }
 
   private void cleanLogQueryParam(LogQueryParam logQueryParam) {

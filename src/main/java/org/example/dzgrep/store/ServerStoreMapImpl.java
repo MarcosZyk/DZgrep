@@ -39,6 +39,11 @@ public class ServerStoreMapImpl implements ServerStore {
   }
 
   @Override
+  public ServerInfo getServer(String serverIp) {
+    return serverInfoMap.get(serverIp);
+  }
+
+  @Override
   public List<ServerInfo> getServerList(List<String> serverIpList) {
     return serverIpList.stream().map(serverInfoMap::get).collect(Collectors.toList());
   }

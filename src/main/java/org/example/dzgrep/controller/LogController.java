@@ -1,6 +1,7 @@
 package org.example.dzgrep.controller;
 
 import org.example.dzgrep.service.LogService;
+import org.example.dzgrep.vo.LogContextParam;
 import org.example.dzgrep.vo.LogQueryParam;
 import org.example.dzgrep.vo.LogView;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,13 @@ public class LogController {
     return null;
   }
 
-  public ResponseEntity<String> getDetail() {
-    return null;
+  @RequestMapping(value = "/context", method = RequestMethod.POST)
+  public ResponseEntity<String> getLogContext(@RequestBody LogContextParam logContextParam) {
+    try {
+      return ResponseEntity.ok(logService.getLogContext(logContextParam));
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.internalServerError().build();
+    }
   }
 }

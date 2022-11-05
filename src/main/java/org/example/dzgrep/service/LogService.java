@@ -1,5 +1,6 @@
 package org.example.dzgrep.service;
 
+import org.example.dzgrep.vo.LogContextParam;
 import org.example.dzgrep.vo.LogQueryParam;
 import org.example.dzgrep.vo.LogView;
 
@@ -10,4 +11,6 @@ public interface LogService {
   void cancelLogQuery(String queryId);
 
   LogView getExistingLogQuery(String queryId);
+
+  String getLogContext(LogContextParam logContextParam) throws Exception;
 }

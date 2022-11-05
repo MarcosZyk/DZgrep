@@ -16,5 +16,7 @@ public interface ServerStore {
 
   void deactivateServer(String serverIp);
 
+  ServerInfo getServer(String serverIp);
+
   List<ServerInfo> getServerList(List<String> serverIpList);
 }

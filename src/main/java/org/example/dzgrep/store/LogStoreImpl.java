@@ -2,19 +2,26 @@ package org.example.dzgrep.store;
 
 import org.example.dzgrep.config.LogType;
 import org.example.dzgrep.entity.LogQueryInfo;
+import org.example.dzgrep.entity.LogRecord;
 import org.example.dzgrep.reader.LogReader;
 import org.example.dzgrep.reader.LogReaderFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 @Component
 public class LogStoreImpl implements LogStore {
@@ -91,6 +98,33 @@ public class LogStoreImpl implements LogStore {
               String.format(LOG_FILE_TEMPLATE, LogType.all.getTxtInFileName())));
     }
     return result;
+  }
+
+  @Override
+  public LogRecord getRawLog(String queryId, String server, long index) throws IOException {
+    String logFilePath =
+        getRootDirPath()
+            + File.separator
+            + queryId
+            + File.separator
+            + server
+            + File.separator
+            + String.format(LOG_FILE_TEMPLATE, LogType.all.getTxtInFileName());
+    FileInputStream fileInputStream = new FileInputStream(logFilePath);
+    FileChannel fileChannel = fileInputStream.getChannel();
+    ByteBuffer buffer = ByteBuffer.allocate(4 * 1024);
+    fileChannel.read(buffer, index);
+    Scanner scanner = new Scanner(new ByteArrayInputStream(buffer.array()));
+    if (scanner.hasNextLine()) {
+      try {
+        return new LogRecord(scanner.next());
+      } catch (ParseException e) {
+        e.printStackTrace();
+        return null;
+      }
+    } else {
+      return null;
+    }
   }
 
   private String getRootDirPath() {
