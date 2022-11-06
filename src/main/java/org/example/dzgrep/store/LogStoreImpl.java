@@ -112,12 +112,12 @@ public class LogStoreImpl implements LogStore {
             + String.format(LOG_FILE_TEMPLATE, LogType.all.getTxtInFileName());
     FileInputStream fileInputStream = new FileInputStream(logFilePath);
     FileChannel fileChannel = fileInputStream.getChannel();
-    ByteBuffer buffer = ByteBuffer.allocate(4 * 1024);
+    ByteBuffer buffer = ByteBuffer.allocate(16 * 1024);
     fileChannel.read(buffer, index);
     Scanner scanner = new Scanner(new ByteArrayInputStream(buffer.array()));
     if (scanner.hasNextLine()) {
       try {
-        return new LogRecord(scanner.next());
+        return new LogRecord(scanner.nextLine());
       } catch (ParseException e) {
         e.printStackTrace();
         return null;

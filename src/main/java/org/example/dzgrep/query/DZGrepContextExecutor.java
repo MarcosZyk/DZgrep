@@ -85,7 +85,11 @@ public class DZGrepContextExecutor implements LogContextQueryExecutor {
   private String generateCommand(LogContextQueryPlan plan, String logDir) {
     return String.format(ACCESS_DIR_TEMPLATE, logDir)
         + "\n"
-        + String.format(QUERY_TEMPLATE, CONTEXT_RANGE, plan.getRawContent(), plan.getTargetFile())
+        + String.format(
+            QUERY_TEMPLATE,
+            CONTEXT_RANGE,
+            plan.getRawContent().replace("[", "\\[").replace("]", "\\]"),
+            plan.getTargetFile())
         + "\n";
   }
 }
