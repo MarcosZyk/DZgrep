@@ -131,6 +131,9 @@ public class LogStoreImpl implements LogStore {
     if (rootDirPath == null) {
       try {
         rootDirPath = ResourceUtils.getURL("classpath:").getPath() + File.separator + ROOT_DIR_NAME;
+        if (rootDirPath.startsWith("file:/") || rootDirPath.startsWith("file:\\")) {
+          rootDirPath = rootDirPath.substring(6);
+        }
       } catch (FileNotFoundException e) {
         e.printStackTrace();
       }
