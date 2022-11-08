@@ -1,6 +1,6 @@
 let queryNameGenerator = 1;
 
-let  queryId = '';
+let queryId = '';
 let logQueryResultServerList = [];
 let lineCount = 0;
 let logData = {};
@@ -133,7 +133,7 @@ function showLogInfo(logUi) {
     body.append(generateLogDetailModal(lineIndex, columnIndex));
 }
 
-function generateLogDetailModal(lineIndex, columnIndex){
+function generateLogDetailModal(lineIndex, columnIndex) {
     let logInfo = logData[lineIndex].serverLogs[logQueryResultServerList[columnIndex]];
     let ui = '<div>';
 
@@ -152,7 +152,7 @@ function generateLogDetailModal(lineIndex, columnIndex){
     return ui;
 }
 
-function queryLogContext(){
+function queryLogContext() {
     postRequest(
         '/log/context',
         {
@@ -160,12 +160,12 @@ function queryLogContext(){
             targetServer: logQueryResultServerList[selectedLog.columnIndex],
             index: logData[selectedLog.lineIndex].serverLogs[logQueryResultServerList[selectedLog.columnIndex]].index,
         },
-        function (res){
+        function (res) {
             let logContextUI = $("#log-context");
             logContextUI.empty();
-            logContextUI.append('<p>'+res+'</p>');
+            logContextUI.append('<p>' + res.replaceAll('\n', '<br/>') + '</p>');
         },
-        function (error){
+        function (error) {
             alert(error);
         }
     )
