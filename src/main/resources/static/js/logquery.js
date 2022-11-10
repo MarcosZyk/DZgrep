@@ -10,6 +10,8 @@ let selectedLog = {
     columnIndex: 0,
 }
 
+let lastLogRecord = null;
+
 function queryLog() {
     let activeServer = []
     serverList.forEach(
@@ -34,6 +36,7 @@ function queryLog() {
         },
         function (res) {
             let logTable = $("#log-table");
+            logTable.empty();
             queryId = res.queryId;
             logQueryResultServerList = res.serverList;
             logData = res.logList;
@@ -43,6 +46,7 @@ function queryLog() {
                     renderLogTableLine(res.serverList, lineData, logTable);
                 }
             );
+            lastLogRecord = $("#log-row-" + (lineCount - 1));
             alert("Finish executing log query");
         },
         function (error) {
@@ -72,7 +76,7 @@ function renderLogTableHeader(serverList, logTable) {
 }
 
 function renderLogTableLine(serverList, lineData, logTable) {
-    let ui = '<div class="row">\n';
+    let ui = '<div class="row" id="log-row-' + lineCount + '">\n';
 
     ui += '                <div class="col">\n' +
         '                    <div class="card text-white bg-primary mb-3" style="max-width: 18rem;">\n' +
@@ -164,6 +168,45 @@ function queryLogContext() {
             let logContextUI = $("#log-context");
             logContextUI.empty();
             logContextUI.append('<p>' + res.replaceAll('\n', '<br/>') + '</p>');
+        },
+        function (error) {
+            alert(error);
+        }
+    )
+}
+
+let $win = $(window);
+let winHeight = $win.height();
+let $main = $("#main-body");
+$main.scroll(function () {
+    if (lastLogRecord == null) {
+        return;
+    }
+    let itemOffsetTop = lastLogRecord.offset().top;
+    let itemOuterHeight = lastLogRecord.outerHeight();
+    var winScrollTop = $main.scrollTop();
+    if (!(winScrollTop > itemOffsetTop + itemOuterHeight) && !(winScrollTop < itemOffsetTop - winHeight)) {
+        console.log('出现了');
+        getNextPage();
+    } else {
+        console.log('消失了');
+    }
+});
+
+function getNextPage() {
+    getRequest(
+        '/log/next?queryId=' + queryId,
+        function (res) {
+            let logTable = $("#log-table");
+            res.logList.forEach(function (log) {
+                logData.push(log);
+            });
+            res.logList.forEach(
+                function (lineData) {
+                    renderLogTableLine(res.serverList, lineData, logTable);
+                }
+            );
+            lastLogRecord = $("#log-row-" + (lineCount - 1));
         },
         function (error) {
             alert(error);

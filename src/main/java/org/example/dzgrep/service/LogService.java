@@ -13,4 +13,6 @@ public interface LogService {
   LogView getExistingLogQuery(String queryId);
 
   String getLogContext(LogContextParam logContextParam) throws Exception;
+
+  LogView getNextPage(String queryId) throws Exception;
 }

@@ -51,4 +51,14 @@ public class LogController {
       return ResponseEntity.internalServerError().build();
     }
   }
+
+  @RequestMapping(value = "/next", method = RequestMethod.GET)
+  public ResponseEntity<LogView> getNextPage(@RequestParam String queryId) {
+    try {
+      return ResponseEntity.ok(logService.getNextPage(queryId));
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.internalServerError().build();
+    }
+  }
 }

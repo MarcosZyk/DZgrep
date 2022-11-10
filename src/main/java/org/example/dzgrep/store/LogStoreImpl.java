@@ -5,19 +5,19 @@ import org.example.dzgrep.entity.LogQueryInfo;
 import org.example.dzgrep.entity.LogRecord;
 import org.example.dzgrep.reader.LogReader;
 import org.example.dzgrep.reader.LogReaderFactory;
+import org.springframework.boot.system.ApplicationHome;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,8 +28,34 @@ public class LogStoreImpl implements LogStore {
 
   private static final String ROOT_DIR_NAME = "dzgrep";
   private static final String LOG_FILE_TEMPLATE = "log_%s.log";
+  private static final String HISTORY_DIR_NAME = "history";
+  private static final String HISTORY_DIR_TMP_NAME = "history_tmp";
 
   private String rootDirPath;
+
+  public LogStoreImpl() {
+    String rootPath = getRootDirPath();
+    File rootDir = new File(rootPath);
+    if (!rootDir.exists()) {
+      return;
+    }
+    String historyTmpDirPath = rootPath + File.separator + HISTORY_DIR_TMP_NAME;
+    File historyTmpDir = new File(historyTmpDirPath);
+    historyTmpDir.mkdir();
+    for (File dir : rootDir.listFiles()) {
+      if (dir.getName().equals(HISTORY_DIR_TMP_NAME)) {
+        continue;
+      }
+      try {
+        Files.move(
+            Paths.get(dir.getAbsolutePath()),
+            Paths.get(historyTmpDirPath + File.separator + dir.getName()));
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    historyTmpDir.renameTo(new File(rootPath + File.separator + HISTORY_DIR_NAME));
+  }
 
   @Override
   public Map<String, Map<LogType, OutputStream>> getLogStoreOutputStream(LogQueryInfo queryInfo)
@@ -129,14 +155,9 @@ public class LogStoreImpl implements LogStore {
 
   private String getRootDirPath() {
     if (rootDirPath == null) {
-      try {
-        rootDirPath = ResourceUtils.getURL("classpath:").getPath() + File.separator + ROOT_DIR_NAME;
-        if (rootDirPath.startsWith("file:/") || rootDirPath.startsWith("file:\\")) {
-          rootDirPath = rootDirPath.substring(6);
-        }
-      } catch (FileNotFoundException e) {
-        e.printStackTrace();
-      }
+      ApplicationHome ah = new ApplicationHome(getClass());
+      File file = ah.getSource();
+      rootDirPath = file.getParentFile().getAbsolutePath() + File.separator + ROOT_DIR_NAME;
     }
     return rootDirPath;
   }

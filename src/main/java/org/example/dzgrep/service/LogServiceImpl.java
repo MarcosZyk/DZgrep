@@ -86,6 +86,10 @@ public class LogServiceImpl implements LogService {
         new QueryResultGenerator(logStore.getAllLogReader(queryId));
     queryResultGeneratorMap.put(queryId, resultGenerator);
 
+    return getNextPage(queryId);
+  }
+
+  private LogView generateNextPage(String queryId, QueryResultGenerator resultGenerator) {
     List<TimeLogRecordView> resultList = new ArrayList<>(PAGE_SIZE);
     for (int i = 0; i < PAGE_SIZE; i++) {
       if (resultGenerator.hasNext()) {
@@ -119,6 +123,11 @@ public class LogServiceImpl implements LogService {
     LogContextQueryExecutor executor = LogContextQueryExecutorFactory.createExecutor();
     return executor.execute(
         new LogContextQueryPlan(serverInfo, logRecord.getFileName(), logRecord.getRawText()));
+  }
+
+  @Override
+  public LogView getNextPage(String queryId) throws Exception {
+    return generateNextPage(queryId, queryResultGeneratorMap.get(queryId));
   }
 
   private void cleanLogQueryParam(LogQueryParam logQueryParam) {
