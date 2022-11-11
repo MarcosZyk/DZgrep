@@ -11,11 +11,15 @@ import java.io.OutputStream;
 
 public class DZGrepContextExecutor implements LogContextQueryExecutor {
 
+  private static final String[] RESERVED_CHAR = {
+    "\\", "$", "*", "+", ".", "[", "]", "?", "^", "{", "}", "|", "'", "\""
+  };
+
   private static final int PORT = 22;
   private static final int TIME_OUT_LIMITATION = 20 * 60 * 1000;
   private static final String ACCESS_DIR_TEMPLATE = "cd %s";
-  private static final String QUERY_TEMPLATE = "zgrep -A %d \"%s\" %s";
-  private static final int CONTEXT_RANGE = 50;
+  private static final String QUERY_TEMPLATE = "zgrep -C %d \"%s\" %s";
+  private static final int CONTEXT_RANGE = 80;
 
   DZGrepContextExecutor() {}
 
@@ -88,8 +92,15 @@ public class DZGrepContextExecutor implements LogContextQueryExecutor {
         + String.format(
             QUERY_TEMPLATE,
             CONTEXT_RANGE,
-            plan.getRawContent().replace("[", "\\[").replace("]", "\\]"),
+            processReservedChar(plan.getRawContent()),
             plan.getTargetFile())
         + "\n";
+  }
+
+  private String processReservedChar(String str) {
+    for (String c : RESERVED_CHAR) {
+      str = str.replace(c, "\\" + c);
+    }
+    return str;
   }
 }

@@ -104,6 +104,9 @@ public class LogStoreImpl implements LogStore {
       if (canSkip) {
         continue;
       }
+      for (File logFile : serverDir.listFiles()) {
+        logFile.delete();
+      }
       serverDir.delete();
     }
   }

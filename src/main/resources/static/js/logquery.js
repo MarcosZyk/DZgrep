@@ -25,6 +25,10 @@ function queryLog() {
     logQueryResultServerList = [];
     lineCount = 0;
 
+    let logTable = $("#log-table");
+    logTable.empty();
+    logTable.append(getSpinner());
+
     postRequest(
         '/log/query',
         {
@@ -50,9 +54,19 @@ function queryLog() {
             alert("Finish executing log query");
         },
         function (error) {
+            let logTable = $("#log-table");
+            logTable.empty();
             alert(error);
         }
     );
+}
+
+function getSpinner(){
+    return '<div class="d-flex justify-content-center">\n' +
+        '  <div class="spinner-border spinner-border-xl" role="status">\n' +
+        '    <span class="visually-hidden">Loading...</span>\n' +
+        '  </div>\n' +
+        '</div>';
 }
 
 function renderLogTableHeader(serverList, logTable) {
@@ -157,6 +171,9 @@ function generateLogDetailModal(lineIndex, columnIndex) {
 }
 
 function queryLogContext() {
+    let logContextUI = $("#log-context");
+    logContextUI.empty();
+    logContextUI.append(getSpinner());
     postRequest(
         '/log/context',
         {
@@ -170,28 +187,32 @@ function queryLogContext() {
             logContextUI.append('<p>' + res.replaceAll('\n', '<br/>') + '</p>');
         },
         function (error) {
+            let logContextUI = $("#log-context");
+            logContextUI.empty();
             alert(error);
         }
     )
 }
 
-let $win = $(window);
-let winHeight = $win.height();
-let $main = $("#main-body");
-$main.scroll(function () {
-    if (lastLogRecord == null) {
-        return;
-    }
-    let itemOffsetTop = lastLogRecord.offset().top;
-    let itemOuterHeight = lastLogRecord.outerHeight();
-    var winScrollTop = $main.scrollTop();
-    if (!(winScrollTop > itemOffsetTop + itemOuterHeight) && !(winScrollTop < itemOffsetTop - winHeight)) {
-        console.log('出现了');
-        getNextPage();
-    } else {
-        console.log('消失了');
-    }
+
+$(document).ready(function (){
+    let win = $(window);
+    let main = $("#main-body");
+    let mainEl = main[0];
+    mainEl.addEventListener("scroll", function () {
+        if (lastLogRecord == null) {
+            return;
+        }
+        let winScrollTop = win.scrollTop();
+        let mainHeight = main.height();
+        let itemOffsetTop = lastLogRecord.offset().top;
+        let itemOuterHeight = lastLogRecord.outerHeight();
+        if (itemOffsetTop - winScrollTop + itemOuterHeight <= mainHeight){
+            getNextPage();
+        }
+    });
 });
+
 
 function getNextPage() {
     getRequest(

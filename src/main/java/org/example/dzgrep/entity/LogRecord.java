@@ -44,6 +44,11 @@ public class LogRecord {
     }
 
     this.rawText = text.substring(fileNameSeparatorIndex + 1);
+    if (!Character.isDigit(text.charAt(fileNameSeparatorIndex + 1))) {
+      // not a log start with time
+      content = rawText;
+      return;
+    }
 
     int timeSeparatorIndex = text.indexOf(",", fileNameSeparatorIndex);
     String time = text.substring(fileNameSeparatorIndex + 1, timeSeparatorIndex);

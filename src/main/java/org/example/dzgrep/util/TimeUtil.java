@@ -133,6 +133,9 @@ public class TimeUtil {
   }
 
   public static String formatTime(Date date) {
+    if (date == null) {
+      return "No Time field";
+    }
     return dateFormat.format(date);
   }
 }

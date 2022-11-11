@@ -193,10 +193,15 @@ public class LogServiceImpl implements LogService {
     private void readNext() {
       Map<String, LogRecordView> result = new HashMap<>();
       Date currentDate = null;
+      boolean hasLog = false;
       LogRecord logRecord;
       for (String server : serverList) {
         logRecord = peek(server);
         if (logRecord == null) {
+          continue;
+        }
+        hasLog = true;
+        if (logRecord.getTime() == null) {
           continue;
         }
         if (currentDate == null || logRecord.getTime().before(currentDate)) {
@@ -204,17 +209,27 @@ public class LogServiceImpl implements LogService {
         }
       }
 
-      if (currentDate == null) {
+      if (!hasLog) {
         return;
       }
 
-      for (String server : serverList) {
-        logRecord = peek(server);
-        if (logRecord == null) {
-          continue;
-        }
-        if (logRecord.getTime().equals(currentDate)) {
+      if (currentDate == null) {
+        for (String server : serverList) {
+          logRecord = peek(server);
+          if (logRecord == null) {
+            continue;
+          }
           result.put(server, generateLogRecordView(pop(server)));
+        }
+      } else {
+        for (String server : serverList) {
+          logRecord = peek(server);
+          if (logRecord == null) {
+            continue;
+          }
+          if (logRecord.getTime().equals(currentDate)) {
+            result.put(server, generateLogRecordView(pop(server)));
+          }
         }
       }
       nextElement = new TimeLogRecordView(TimeUtil.formatTime(currentDate), result);

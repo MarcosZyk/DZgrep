@@ -55,7 +55,7 @@ public class LogReaderImpl implements LogReader {
     logRecord.setIndex(currentIndex);
 
     String text = scanner.nextLine();
-    currentIndex += text.length();
+    currentIndex += text.length() + 1;
 
     try {
       logRecord.parseFromText(text);
