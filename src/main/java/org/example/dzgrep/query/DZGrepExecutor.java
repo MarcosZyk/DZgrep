@@ -124,8 +124,9 @@ public class DZGrepExecutor implements DistributionLogQueryExecutor {
             QUERY_TEMPLATE,
             "("
                 + TimeUtil.parseTimeRangeToRegex(plan.getStartTime(), plan.getEndTime())
-                + ").*"
-                + plan.getKeyword(),
+                + ").*("
+                + plan.getKeyword()
+                + ")",
             type.getTxtInFileName())
         + "\n";
   }
