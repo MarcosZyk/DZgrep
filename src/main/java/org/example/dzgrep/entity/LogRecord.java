@@ -3,6 +3,7 @@ package org.example.dzgrep.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.dzgrep.config.LogType;
 import org.example.dzgrep.util.TimeUtil;
 
 import java.text.ParseException;
@@ -19,7 +20,7 @@ public class LogRecord {
 
   private Date time;
 
-  private int rollNumber;
+  private int rollNumber = -1;
 
   private String thread;
 
@@ -30,6 +31,8 @@ public class LogRecord {
   private String content;
 
   private String rawText;
+
+  private LogType logType;
 
   public LogRecord(String text) throws ParseException {
     parseFromText(text);

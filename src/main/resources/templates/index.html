@@ -193,27 +193,48 @@
             <div class="container d-flex flex-wrap justify-content-center">
                 <form class="row g-3">
                     <div class="col-md-6">
-                        <label for="query-name" class="form-label">name</label>
+                        <label for="query-name" class="form-label">Query Name</label>
                         <div class="col-sm-10">
                             <input type="text" class="form-control" id="query-name" value="query name">
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label for="query-start-time" class="form-label">start time</label>
+                        <label for="query-start-time" class="form-label">Start Time</label>
                         <div class="col-sm-10">
                             <input type="text" class="form-control" id="query-start-time">
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label for="query-end-time" class="form-label">end time</label>
+                        <label for="query-end-time" class="form-label">End Time</label>
                         <div class="col-sm-10">
                             <input type="text" class="form-control" id="query-end-time">
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label for="query-keyword" class="form-label">keyword</label>
+                        <label for="query-keyword" class="form-label">Keyword Regex</label>
                         <div class="col-sm-10">
                             <input type="text" class="form-control" id="query-keyword">
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="col-md-5 mx-auto">
+                            <div class="form-check form-check-inline">Log Type:</div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="error-log-checkbox" checked>
+                                <label class="form-check-label" for="error-log-checkbox">error</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="warn-log-checkbox" checked>
+                                <label class="form-check-label" for="warn-log-checkbox">warn</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="info-log-checkbox" checked>
+                                <label class="form-check-label" for="info-log-checkbox">info</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="debug-log-checkbox" checked>
+                                <label class="form-check-label" for="debug-log-checkbox">debug</label>
+                            </div>
                         </div>
                     </div>
 

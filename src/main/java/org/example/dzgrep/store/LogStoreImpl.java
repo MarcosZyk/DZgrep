@@ -69,7 +69,7 @@ public class LogStoreImpl implements LogStore {
       File serverDir = new File(serverDirPath);
       serverDir.mkdirs();
       Map<LogType, OutputStream> logFileOutputStreamMap = new HashMap<>();
-      for (LogType type : LogType.values()) {
+      for (LogType type : queryInfo.getTypeList()) {
         String filePath =
             serverDirPath
                 + File.separator
@@ -94,25 +94,17 @@ public class LogStoreImpl implements LogStore {
         continue;
       }
 
-      boolean canSkip = false;
       for (File logFile : serverDir.listFiles()) {
-        if (logFile.length() > 0) {
-          canSkip = true;
-          break;
+        if (logFile.length() == 0) {
+          logFile.delete();
         }
-      }
-      if (canSkip) {
-        continue;
-      }
-      for (File logFile : serverDir.listFiles()) {
-        logFile.delete();
       }
       serverDir.delete();
     }
   }
 
   @Override
-  public Map<String, LogReader> getAllLogReader(String queryId) throws IOException {
+  public Map<String, LogReader> getServerLogReader(String queryId) throws IOException {
     String queryDirPath = getRootDirPath() + File.separator + queryId;
     File queryDir = new File(queryDirPath);
     Map<String, LogReader> result = new HashMap<>();
@@ -120,17 +112,33 @@ public class LogStoreImpl implements LogStore {
       if (!serverDir.isDirectory()) {
         continue;
       }
+      Map<LogType, String> fileNameMap = new HashMap<>();
+      for (File logFile : serverDir.listFiles()) {
+        String fileName = logFile.getName();
+        LogType logType = getBelongedLogType(fileName);
+        if (logType.equals(LogType.all)) {
+          continue;
+        }
+        fileNameMap.put(logType, fileName);
+      }
       result.put(
-          serverDir.getName(),
-          LogReaderFactory.createLogReader(
-              serverDir.getPath(),
-              String.format(LOG_FILE_TEMPLATE, LogType.all.getTxtInFileName())));
+          serverDir.getName(), LogReaderFactory.createLogReader(serverDir.getPath(), fileNameMap));
     }
     return result;
   }
 
+  private LogType getBelongedLogType(String fileName) {
+    for (LogType logType : LogType.values()) {
+      if (fileName.contains(logType.name())) {
+        return logType;
+      }
+    }
+    throw new IllegalArgumentException();
+  }
+
   @Override
-  public LogRecord getRawLog(String queryId, String server, long index) throws IOException {
+  public LogRecord getRawLog(String queryId, String server, LogType logType, long index)
+      throws IOException {
     String logFilePath =
         getRootDirPath()
             + File.separator
@@ -138,7 +146,7 @@ public class LogStoreImpl implements LogStore {
             + File.separator
             + server
             + File.separator
-            + String.format(LOG_FILE_TEMPLATE, LogType.all.getTxtInFileName());
+            + String.format(LOG_FILE_TEMPLATE, logType.getTxtInFileName());
     FileInputStream fileInputStream = new FileInputStream(logFilePath);
     FileChannel fileChannel = fileInputStream.getChannel();
     ByteBuffer buffer = ByteBuffer.allocate(16 * 1024);

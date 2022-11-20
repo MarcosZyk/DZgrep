@@ -12,29 +12,21 @@ class ServerForm {
 
     toElement(isReadOnly) {
         return '   <form>\n' +
-            '       <div class="row mb-3">\n' +
-            '           <label for="server-' + this.id + '-ip" class="col-sm-2 col-form-label">ip</label>\n' +
-            '           <div class="col-sm-10">\n' +
-            '               <input type="text" class="form-control" id="server-' + this.id + '-ip"  value="' + this.ip + '" ' + (isReadOnly ? ' disabled readonly' : '') + '>\n' +
-            '           </div>\n' +
+            '       <div class="mb-3">\n' +
+            '           <label for="server-' + this.id + '-ip" class="form-label">IP Address</label>\n' +
+            '           <input type="text" class="form-control" id="server-' + this.id + '-ip"  value="' + this.ip + '" ' + (isReadOnly ? ' disabled readonly' : '') + '>\n' +
             '       </div>\n' +
-            '       <div class="row mb-3">\n' +
-            '           <label for="server-' + this.id + '-user" class="col-sm-2 col-form-label">user</label>\n' +
-            '           <div class="col-sm-10">\n' +
-            '               <input type="text" class="form-control" id="server-' + this.id + '-user" value="' + this.user + '" ' + (isReadOnly ? ' disabled readonly' : '') + '>\n' +
-            '           </div>\n' +
+            '       <div class="mb-3">\n' +
+            '           <label for="server-' + this.id + '-user" class="form-label">User Name</label>\n' +
+            '           <input type="text" class="form-control" id="server-' + this.id + '-user" value="' + this.user + '" ' + (isReadOnly ? ' disabled readonly' : '') + '>\n' +
             '       </div>\n' +
-            '       <div class="row mb-3">\n' +
-            '           <label for="server-' + this.id + '-password" class="col-sm-2 col-form-label">password</label>\n' +
-            '           <div class="col-sm-10">\n' +
-            '               <input type="text" class="form-control" id="server-' + this.id + '-password" value="' + this.password + '" ' + (isReadOnly ? ' disabled readonly' : '') + '>\n' +
-            '           </div>\n' +
+            '       <div class="mb-3">\n' +
+            '           <label for="server-' + this.id + '-password" class="form-label">Password</label>\n' +
+            '           <input type="text" class="form-control" id="server-' + this.id + '-password" value="' + this.password + '" ' + (isReadOnly ? ' disabled readonly' : '') + '>\n' +
             '       </div>\n' +
-            '       <div class="row mb-3">\n' +
-            '           <label for="server-' + this.id + '-logDir" class="col-sm-2 col-form-label">log dir</label>\n' +
-            '           <div class="col-sm-10">\n' +
-            '               <input type="text" class="form-control" id="server-' + this.id + '-logDir" value="' + this.logDir + '" ' + (isReadOnly ? ' disabled readonly' : '') + '>\n' +
-            '           </div>\n' +
+            '       <div class="mb-3">\n' +
+            '           <label for="server-' + this.id + '-logDir" class="form-label">Log Directory Path</label>\n' +
+            '           <input type="text" class="form-control" id="server-' + this.id + '-logDir" value="' + this.logDir + '" ' + (isReadOnly ? ' disabled readonly' : '') + '>\n' +
             '       </div>\n' +
             '   </form>\n';
     }

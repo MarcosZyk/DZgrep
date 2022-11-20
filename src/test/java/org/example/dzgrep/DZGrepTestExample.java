@@ -45,7 +45,8 @@ public class DZGrepTestExample {
             "2022-09-29 20:23:38",
             "2022-09-29 20:23:38",
             "MetaData error",
-            Arrays.asList(ipList)));
+            Arrays.asList(ipList),
+            Arrays.asList("error", "warn", "info", "debug")));
     //
     //    logService.createLogQuery(
     //        new LogQueryParam("ratis", "", "", "RatisRequestFailedException",

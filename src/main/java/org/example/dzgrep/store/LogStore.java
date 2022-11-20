@@ -16,7 +16,8 @@ public interface LogStore {
 
   void pruneEmptyServer(String queryId) throws IOException;
 
-  Map<String, LogReader> getAllLogReader(String queryId) throws IOException;
+  Map<String, LogReader> getServerLogReader(String queryId) throws IOException;
 
-  LogRecord getRawLog(String queryId, String server, long index) throws IOException;
+  LogRecord getRawLog(String queryId, String server, LogType logType, long index)
+      throws IOException;
 }

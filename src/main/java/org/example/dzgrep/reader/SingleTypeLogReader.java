@@ -10,7 +10,7 @@ import java.text.ParseException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-public class LogReaderImpl implements LogReader {
+public class SingleTypeLogReader implements LogReader {
 
   private Scanner scanner;
 
@@ -18,7 +18,7 @@ public class LogReaderImpl implements LogReader {
 
   private int currentIndex = 0;
 
-  LogReaderImpl(String dirPath, String fileName) throws IOException {
+  SingleTypeLogReader(String dirPath, String fileName) throws IOException {
     FileInputStream fileInputStream = new FileInputStream(dirPath + File.separator + fileName);
     scanner = new Scanner(new BufferedInputStream(fileInputStream));
   }

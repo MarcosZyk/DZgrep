@@ -83,7 +83,7 @@ public class LogServiceImpl implements LogService {
     logStore.pruneEmptyServer(queryId);
 
     QueryResultGenerator resultGenerator =
-        new QueryResultGenerator(logStore.getAllLogReader(queryId));
+        new QueryResultGenerator(logStore.getServerLogReader(queryId));
     queryResultGeneratorMap.put(queryId, resultGenerator);
 
     return getNextPage(queryId);
@@ -118,6 +118,7 @@ public class LogServiceImpl implements LogService {
         logStore.getRawLog(
             logContextParam.getQueryId(),
             logContextParam.getTargetServer(),
+            LogType.valueOf(logContextParam.getLogType()),
             logContextParam.getIndex());
     ServerInfo serverInfo = serverStore.getServer(logContextParam.getTargetServer());
     LogContextQueryExecutor executor = LogContextQueryExecutorFactory.createExecutor();
@@ -140,13 +141,19 @@ public class LogServiceImpl implements LogService {
   }
 
   private LogQueryInfo generateLogQueryInfo(LogQueryParam logQueryParam, String queryId) {
+    List<LogType> typeList =
+        logQueryParam.getTypeList().stream().map(LogType::valueOf).collect(Collectors.toList());
+    if (typeList.size() == 4) {
+      typeList.add(LogType.all);
+    }
     return new LogQueryInfo(
         queryId,
         logQueryParam.getQueryName(),
         logQueryParam.getStartTime(),
         logQueryParam.getEndTime(),
         logQueryParam.getKeyword(),
-        logQueryParam.getServerIpList());
+        logQueryParam.getServerIpList(),
+        typeList);
   }
 
   private DistributionLogQueryPlan generateDistributionLogQueryPlan(LogQueryParam logQueryParam) {
@@ -257,7 +264,7 @@ public class LogServiceImpl implements LogService {
       return new LogRecordView(
           logRecord.getIndex(),
           logRecord.getThread(),
-          logRecord.getType(),
+          logRecord.getLogType().name(),
           logRecord.getSource(),
           logRecord.getContent());
     }

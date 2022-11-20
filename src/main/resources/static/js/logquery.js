@@ -13,6 +13,12 @@ let selectedLog = {
 let lastLogRecord = null;
 
 function queryLog() {
+
+    let typeList = getLogTypeList();
+    if (typeList.length === 0) {
+        alert('must choose at least one log type');
+    }
+
     let activeServer = []
     serverList.forEach(
         function (server) {
@@ -36,7 +42,8 @@ function queryLog() {
             startTime: $("#query-start-time")[0].value,
             endTime: $("#query-end-time")[0].value,
             keyword: $("#query-keyword")[0].value,
-            serverIpList: activeServer
+            serverIpList: activeServer,
+            typeList: typeList
         },
         function (res) {
             let logTable = $("#log-table");
@@ -61,7 +68,24 @@ function queryLog() {
     );
 }
 
-function getSpinner(){
+function getLogTypeList() {
+    let typeList = [];
+    if ($('#error-log-checkbox').is(':checked')) {
+        typeList.push('error');
+    }
+    if ($('#warn-log-checkbox').is(':checked')) {
+        typeList.push('warn');
+    }
+    if ($('#info-log-checkbox').is(':checked')) {
+        typeList.push('info');
+    }
+    if ($('#debug-log-checkbox').is(':checked')) {
+        typeList.push('debug');
+    }
+    return typeList;
+}
+
+function getSpinner() {
     return '<div class="d-flex justify-content-center">\n' +
         '  <div class="spinner-border spinner-border-xl" role="status">\n' +
         '    <span class="visually-hidden">Loading...</span>\n' +
@@ -126,11 +150,11 @@ function renderLogTableLine(serverList, lineData, logTable) {
 }
 
 function getLogCardStyle(type) {
-    if (type === 'ERROR') {
+    if (type === 'error') {
         return 'text-white bg-danger';
-    } else if (type === 'WARN') {
+    } else if (type === 'warn') {
         return 'text-dark bg-warning';
-    } else if (type === 'DEBUG') {
+    } else if (type === 'debug') {
         return 'text-white bg-secondary';
     } else {
         return 'text-dark bg-light';
@@ -179,6 +203,7 @@ function queryLogContext() {
         {
             queryId: queryId,
             targetServer: logQueryResultServerList[selectedLog.columnIndex],
+            logType: logData[selectedLog.lineIndex].serverLogs[logQueryResultServerList[selectedLog.columnIndex]].type,
             index: logData[selectedLog.lineIndex].serverLogs[logQueryResultServerList[selectedLog.columnIndex]].index,
         },
         function (res) {
@@ -195,7 +220,7 @@ function queryLogContext() {
 }
 
 
-$(document).ready(function (){
+$(document).ready(function () {
     let win = $(window);
     let main = $("#main-body");
     let mainEl = main[0];
@@ -207,7 +232,7 @@ $(document).ready(function (){
         let mainHeight = main.height();
         let itemOffsetTop = lastLogRecord.offset().top;
         let itemOuterHeight = lastLogRecord.outerHeight();
-        if (itemOffsetTop - winScrollTop + itemOuterHeight <= mainHeight){
+        if (itemOffsetTop - winScrollTop + itemOuterHeight <= mainHeight) {
             getNextPage();
         }
     });

@@ -20,4 +20,6 @@ public class LogQueryParam {
   private String keyword;
 
   private List<String> serverIpList;
+
+  private List<String> typeList;
 }

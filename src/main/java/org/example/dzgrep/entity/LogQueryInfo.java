@@ -3,6 +3,7 @@ package org.example.dzgrep.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.dzgrep.config.LogType;
 
 import java.util.List;
 
@@ -22,4 +23,6 @@ public class LogQueryInfo {
   private String keyword;
 
   private List<String> serverIpList;
+
+  private List<LogType> typeList;
 }

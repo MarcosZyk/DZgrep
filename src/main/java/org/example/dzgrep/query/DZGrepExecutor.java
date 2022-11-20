@@ -40,29 +40,7 @@ public class DZGrepExecutor implements DistributionLogQueryExecutor {
   public void execute(DistributionLogQueryPlan plan) throws Exception {
     List<Future<?>> futureList = new ArrayList<>();
     for (ServerInfo serverInfo : targetServerList) {
-      futureList.add(
-          executorService.submit(
-              () -> {
-                long currentTime = System.currentTimeMillis();
-                try {
-                  System.out.println("Start retrieving logs from " + serverInfo.getIp());
-                  executeOnOneServer(serverInfo, plan);
-                  System.out.println(
-                      "Finish retrieving logs from "
-                          + serverInfo.getIp()
-                          + " in "
-                          + (System.currentTimeMillis() - currentTime)
-                          + "ms");
-                } catch (Exception e) {
-                  System.out.println(
-                      "Failed retrieving logs from "
-                          + serverInfo.getIp()
-                          + " in "
-                          + (System.currentTimeMillis() - currentTime)
-                          + "ms");
-                  e.printStackTrace();
-                }
-              }));
+      futureList.addAll(submitExecutionOnOneServer(serverInfo, plan));
     }
     for (Future<?> future : futureList) {
       future.get();
@@ -79,25 +57,52 @@ public class DZGrepExecutor implements DistributionLogQueryExecutor {
     return false;
   }
 
-  private void executeOnOneServer(ServerInfo serverInfo, DistributionLogQueryPlan plan)
-      throws Exception {
-    JSch jsch = new JSch();
+  private List<Future<?>> submitExecutionOnOneServer(
+      ServerInfo serverInfo, DistributionLogQueryPlan plan) throws Exception {
 
-    Session session = jsch.getSession(serverInfo.getUsername(), serverInfo.getIp(), PORT);
-    session.setConfig("StrictHostKeyChecking", "no");
-    session.setPassword(serverInfo.getPassword());
-    session.setTimeout(TIME_OUT_LIMITATION);
-
-    session.connect();
-
+    List<Future<?>> futureList = new ArrayList<>();
     Map<LogType, OutputStream> outputStreamMap = serverResponseOutputStream.get(serverInfo.getIp());
-    for (LogType type : LogType.values()) {
-      OutputStream outputStream = outputStreamMap.get(type);
-      executeCommand(session, generateCommand(plan, serverInfo.getLogDir(), type), outputStream);
-      outputStream.close();
-    }
+    for (LogType type : outputStreamMap.keySet()) {
+      futureList.add(
+          executorService.submit(
+              () -> {
+                try {
 
-    session.disconnect();
+                  JSch jsch = new JSch();
+
+                  Session session =
+                      jsch.getSession(serverInfo.getUsername(), serverInfo.getIp(), PORT);
+                  session.setConfig("StrictHostKeyChecking", "no");
+                  session.setPassword(serverInfo.getPassword());
+                  session.setTimeout(TIME_OUT_LIMITATION);
+
+                  session.connect();
+
+                  long currentTime = System.currentTimeMillis();
+                  System.out.println(
+                      "Start retrieving " + type.name() + " logs from " + serverInfo.getIp());
+                  OutputStream outputStream = outputStreamMap.get(type);
+                  executeCommand(
+                      session, generateCommand(plan, serverInfo.getLogDir(), type), outputStream);
+                  outputStream.close();
+                  System.out.println(
+                      "Finish retrieving "
+                          + type.name()
+                          + " logs from "
+                          + serverInfo.getIp()
+                          + " in "
+                          + (System.currentTimeMillis() - currentTime)
+                          + "ms");
+
+                  session.disconnect();
+                } catch (Exception e) {
+                  System.out.println(
+                      "Failed retrieving " + type.name() + " logs from " + serverInfo.getIp());
+                  e.printStackTrace();
+                }
+              }));
+    }
+    return futureList;
   }
 
   private void executeCommand(Session session, String command, OutputStream outputStream)

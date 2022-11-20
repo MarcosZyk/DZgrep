@@ -13,5 +13,7 @@ public class LogContextParam {
 
   private String targetServer;
 
+  private String logType;
+
   private long index;
 }
