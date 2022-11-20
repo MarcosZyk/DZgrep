@@ -3,7 +3,6 @@ package org.example.dzgrep.reader;
 import org.example.dzgrep.config.LogType;
 import org.example.dzgrep.entity.LogRecord;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -47,8 +46,7 @@ public class CompositeLogReader implements LogReader {
 
   private void readNext() {
     LogType targetType = null;
-    Date currentDate = null;
-    int rollNumber = -1;
+    long lineNumber = -1;
     boolean hasLog = false;
     LogRecord logRecord;
     for (LogType logType : singleTypeLogReaderMap.keySet()) {
@@ -57,20 +55,9 @@ public class CompositeLogReader implements LogReader {
         continue;
       }
       hasLog = true;
-      if (logRecord.getTime() == null) {
-        if (targetType == null) {
-          targetType = logType;
-        }
-        continue;
-      }
-      if (currentDate == null || logRecord.getTime().before(currentDate)) {
-        currentDate = logRecord.getTime();
+      if (lineNumber == -1 || logRecord.getLineNumber() < lineNumber) {
+        lineNumber = logRecord.getLineNumber();
         targetType = logType;
-      } else if (logRecord.getTime().equals(currentDate)) {
-        if (rollNumber == -1 || logRecord.getRollNumber() < rollNumber) {
-          rollNumber = logRecord.getRollNumber();
-          targetType = logType;
-        }
       }
     }
 

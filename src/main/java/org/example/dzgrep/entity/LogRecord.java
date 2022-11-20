@@ -16,6 +16,8 @@ public class LogRecord {
 
   private String fileName;
 
+  private long lineNumber;
+
   private long index;
 
   private Date time;
@@ -46,15 +48,19 @@ public class LogRecord {
       this.fileName = text.substring(0, fileNameSeparatorIndex);
     }
 
-    this.rawText = text.substring(fileNameSeparatorIndex + 1);
-    if (!Character.isDigit(text.charAt(fileNameSeparatorIndex + 1))) {
+    int lineNumberSeparatorIndex = text.indexOf(":", fileNameSeparatorIndex + 1);
+    this.lineNumber =
+        Long.parseLong(text.substring(fileNameSeparatorIndex + 1, lineNumberSeparatorIndex));
+
+    this.rawText = text.substring(lineNumberSeparatorIndex + 1);
+    if (!Character.isDigit(text.charAt(lineNumberSeparatorIndex + 1))) {
       // not a log start with time
       content = rawText;
       return;
     }
 
-    int timeSeparatorIndex = text.indexOf(",", fileNameSeparatorIndex);
-    String time = text.substring(fileNameSeparatorIndex + 1, timeSeparatorIndex);
+    int timeSeparatorIndex = text.indexOf(",", lineNumberSeparatorIndex + 1);
+    String time = text.substring(lineNumberSeparatorIndex + 1, timeSeparatorIndex);
 
     this.time = TimeUtil.parseTime(time);
 

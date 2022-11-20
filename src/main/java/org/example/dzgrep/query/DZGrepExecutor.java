@@ -21,7 +21,7 @@ public class DZGrepExecutor implements DistributionLogQueryExecutor {
   private static final int PORT = 22;
   private static final int TIME_OUT_LIMITATION = 20 * 60 * 1000;
   private static final String ACCESS_DIR_TEMPLATE = "cd %s";
-  private static final String QUERY_TEMPLATE = "zgrep -E \"%s\" log*%s*";
+  private static final String QUERY_TEMPLATE = "zgrep -n -E \"%s\" log*%s*";
 
   private final List<ServerInfo> targetServerList;
   private final Map<String, Map<LogType, OutputStream>> serverResponseOutputStream;
